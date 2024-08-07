@@ -1,8 +1,5 @@
 import { useTaskManager } from "@/system/taskManager";
-import {
-  useWindowManager,
-  WindowManagerContext,
-} from "@/system/windowManager/WindowManager";
+import { useWindowManager } from "@/system/windowManager/WindowManager";
 import { createContext, useCallback, useContext, useMemo } from "react";
 import { ResizeDirection, resizeHandler } from "./Resizer";
 
@@ -11,7 +8,9 @@ export type WindowContext = {
   onDragEnd: () => void;
   setWindowElement: (element: HTMLDivElement) => void;
   minimize: () => void;
+  close: () => void;
   onResize: (e: MouseEvent, direction: ResizeDirection) => void;
+  zoom: () => void;
 };
 
 // Cheating because it is a hassle to keep checking if its null or not,
@@ -48,40 +47,6 @@ export function WindowContextProvider(props: {
     [props.instanceId, windowManager],
   );
 
-  const animateToDock = useCallback(() => {
-    const el = winState?.element;
-    if (!el) {
-      throw new Error("Could not find window element");
-    }
-
-    if (!instance) {
-      throw new Error("Instance does not exist");
-    }
-
-    const dockAppElement = document.getElementById(
-      `macos-dock-app-${instance.application.name}`,
-    );
-
-    if (!dockAppElement) {
-      throw new Error("Could not find app in dock");
-    }
-
-    const appRect = dockAppElement.getBoundingClientRect();
-    const windowRect = el.getBoundingClientRect();
-
-    el.style.transitionProperty = "all";
-    el.style.transitionDuration = 400 + "ms";
-    el.style.transform = `
-      translateX(${appRect.x - windowRect.width / 2 + appRect.width / 2}px) 
-      translateY(${appRect.y - windowRect.height / 2 + appRect.height / 2}px)
-      scale(0.05)
-    `;
-
-    setTimeout(() => {
-      el.style.transitionProperty = "none";
-    }, 400);
-  }, [instance, winState?.element]);
-
   const onDrag: WindowContext["onDrag"] = useCallback(
     (e) => {
       const el = winState?.element;
@@ -102,6 +67,7 @@ export function WindowContextProvider(props: {
         el.style.pointerEvents = "none";
       }
 
+      winState.state = "floating"
       winState.rect.x = e.clientX - (winState.dragOffset?.x || 0);
       winState.rect.y = e.clientY - (winState.dragOffset?.y || 0);
 
@@ -140,8 +106,16 @@ export function WindowContextProvider(props: {
     }
 
     winState.state = "minimized";
-    animateToDock();
-  }, [winState, animateToDock]);
+    draw(true)
+  }, [winState, draw]);
+
+  const close: WindowContext["close"] = useCallback(() => {
+    if (!instance) {
+      throw new Error("No instance to close");
+    }
+
+    taskManager.closeInstance(instance.instanceId);
+  }, [instance, taskManager]);
 
   const onResize: WindowContext["onResize"] = useCallback(
     (e, resizeDirection) => {
@@ -161,15 +135,28 @@ export function WindowContextProvider(props: {
     [winState?.element, draw, winState?.rect, winState?.minSize],
   );
 
+  const zoom: WindowContext["zoom"] = useCallback(() => {
+    if (!winState) {
+      throw new Error("There is no window to zoom");
+    }
+
+    winState.state = "maximized"
+
+    draw(true)
+  }, [winState, draw]);
+
+
   const contextValue = useMemo<WindowContext>(
     () => ({
       onDrag,
       onDragEnd,
       setWindowElement,
       minimize,
+      close,
       onResize,
+      zoom,
     }),
-    [onDrag, onDragEnd, setWindowElement, minimize, onResize],
+    [onDrag, onDragEnd, setWindowElement, minimize, close, onResize, zoom],
   );
 
   return (

@@ -4,7 +4,7 @@ import { defineApplication } from "@/system/applications/defineApplication";
 export const ApplicationSafari = defineApplication({
   name: "safari",
   title: "Safari",
-  iconURL: "/safari-logo.png",
+  iconURL: "/safari-icon.png",
   component: SafariComponent,
 });
 
@@ -17,8 +17,7 @@ export function SafariComponent(applicationProps: { instanceId: string }) {
             <TrafficLights />
           </div>
         </DragArea>
-        <div className="flex-grow bg-[rgb(40,40,40)]/85 --backdrop-blur-[20px] transform-gpu">
-        </div>
+        <div className="flex-grow bg-[rgb(40,40,40)]/85 backdrop-blur-[20px] transform-gpu"></div>
       </div>
     </Window>
   );

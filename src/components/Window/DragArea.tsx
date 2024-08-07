@@ -29,9 +29,10 @@ export function DragArea({
 
   return (
     <div
-      className="h-16 bg-neutral-800 border-b-black/80 border-b"
+      className="h-8 bg-neutral-800 border-b-black/80 border-b"
       {...divProps}
       ref={draggableRef}
+      onDoubleClick={() => windowContext.zoom()}
     >
       {children}
     </div>

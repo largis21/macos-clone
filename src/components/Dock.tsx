@@ -49,7 +49,7 @@ function DockApp(props: { app: Application }) {
       <span
         className={cn(
           // Functional
-          "absolute block opacity-0 left-0 right-0 mx-auto -top-12 group-hover:opacity-100 group-hover:-translate-y-2 transition-all pointer-events-none",
+          "absolute block opacity-0 -left-full -right-full w-fit mx-auto -top-12 group-hover:opacity-100 group-hover:-translate-y-2 transition-all pointer-events-none",
           // Visual
           "flex items-center justify-center whitespace-nowrap bg-[rgb(25,23,5)]/80 backdrop-blur-[10px] border-[rgb(40,40,20)] border text-white px-4 py-1 rounded-lg",
           // TODO: Add the notch (its a pain because of the border)

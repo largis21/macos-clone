@@ -29,15 +29,15 @@ type WindowManagerState = {
 type WindowState = {
   element: HTMLDivElement | null;
   rect: {
-    x: number
-    y: number
-    width: number
-    height: number
-  }
+    x: number;
+    y: number;
+    width: number;
+    height: number;
+  };
   minSize: {
-    width: number
-    height: number
-  }
+    width: number;
+    height: number;
+  };
   state: "floating" | "maximized" | "minimized";
   dragging: boolean;
   dragOffset: { x: number; y: number };
@@ -92,21 +92,72 @@ export function WindowManagerContextProvider(props: {
       }
 
       requestAnimationFrame(() => {
-        if (animate) {
-          el.style.transitionProperty = "all";
-          el.style.transitionDuration = animationDuration + "ms";
+        switch (winState.state) {
+          case "floating": {
+            if (animate) {
+              el.style.transitionProperty = "all";
+              el.style.transitionDuration = animationDuration + "ms";
+            }
+
+            el.style.display = "block";
+            setTimeout(() => {
+              el.style.transform = `translateX(${winState.rect.x}px) translateY(${winState.rect.y}px)`;
+              el.style.width = `${winState.rect.width}px`;
+              el.style.height = `${winState.rect.height}px`;
+            }, 0);
+
+            setTimeout(() => {
+              el.style.transitionProperty = "none";
+            }, animationDuration);
+            break;
+          }
+          case "minimized": {
+            const instance = taskManager.getInstance(instanceId);
+            if (!instance) return;
+
+            const dockAppElement = document.getElementById(
+              `macos-dock-app-${instance.application.name}`,
+            );
+
+            if (!dockAppElement) {
+              throw new Error("Could not find app in dock");
+            }
+
+            const appRect = dockAppElement.getBoundingClientRect();
+            const windowRect = el.getBoundingClientRect();
+
+            el.style.transitionProperty = "all";
+            el.style.transitionDuration = 300 + "ms";
+            el.style.transform = `
+              translateX(${appRect.x - windowRect.width / 2 + appRect.width / 2}px) 
+              translateY(${appRect.y - windowRect.height / 2 + appRect.height / 2}px)
+              scale(0.05)
+            `;
+
+            setTimeout(() => {
+              el.style.transitionProperty = "none";
+              el.style.display = "none";
+            }, 300);
+          }
+          case "maximized": {
+            const margin = 10;
+            el.style.transitionProperty = "all";
+            el.style.transitionDuration = 300 + "ms";
+            el.style.transform = `
+              translateX(${margin}px) 
+              translateY(${32 + margin}px)
+            `;
+            el.style.width = `${window.innerWidth - margin * 2}px`;
+            el.style.height = `${window.innerHeight - margin * 2 - 140}px`;
+
+            setTimeout(() => {
+              el.style.transitionProperty = "none";
+            }, 300);
+          }
         }
-
-        el.style.transform = `translateX(${winState.rect.x}px) translateY(${winState.rect.y}px)`;
-        el.style.width = `${winState.rect.width}px`;
-        el.style.height = `${winState.rect.height}px`;
-
-        setTimeout(() => {
-          el.style.transitionProperty = "none";
-        }, animationDuration);
       });
     },
-    [wmState.instances],
+    [wmState.instances, taskManager],
   );
 
   // Used on rightclick->open or doubleclick on app icon

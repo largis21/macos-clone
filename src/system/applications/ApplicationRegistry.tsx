@@ -1,4 +1,6 @@
 import { ApplicationSafari } from "@/applications/Safari";
+import { ApplicationSettings } from "@/applications/Settings";
+import { ApplicationTerminal } from "@/applications/Terminal";
 import { createContext, useContext, useMemo, useState } from "react";
 
 export type Application = {
@@ -21,6 +23,8 @@ export function ApplicationRegistryProvider(props: { children: React.ReactNode }
     ApplicationRegistry["applicationRegistry"]
   >([
     ApplicationSafari,
+    ApplicationSettings,
+    ApplicationTerminal,
   ]);
 
   const contextValue = useMemo<ApplicationRegistry>(

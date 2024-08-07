@@ -120,16 +120,18 @@ export const Resizeable = forwardRef<HTMLDivElement, ResizableProps>(
     ref,
   ) {
     return (
-      <div ref={ref} {...divAttributes} style={{ position: "relative" }}>
-        {resizeDirections.map((e) => (
-          <Resizer
-            direction={e}
-            resizeWidth={resizeWidth}
-            key={e}
-            onResize={onResize}
-          />
-        ))}
-        {children}
+      <div ref={ref} {...divAttributes}>
+        <div className="h-full w-full relative">
+          {resizeDirections.map((e) => (
+            <Resizer
+              direction={e}
+              resizeWidth={resizeWidth}
+              key={e}
+              onResize={onResize}
+            />
+          ))}
+          {children}
+        </div>
       </div>
     );
   },
